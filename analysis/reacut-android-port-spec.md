@@ -115,8 +115,18 @@ Milestone 3–6 butuh emulator/perangkat.
   (scrub+fling, pinch zoom, trim/move dengan snapping), monitor program
   (frame via `MediaMetadataRetriever`), import media, autosave. APK debug
   ter-build; 92 test lulus; lint bersih; screenshot via Roborazzi.
-- ⏭ Berikutnya: Milestone 4 — playback real-time ExoPlayer (+ audio), lalu
-  thumbnail/waveform di timeline.
+- ✅ Milestone 4 selesai (v0.4.0) — preview real-time dengan suara lewat
+  Media3 `CompositionPlayer`: setiap track jadi sequence (gap eksplisit),
+  sequence 0 = lapisan teratas (dicek di bytecode `DefaultCompositorGlProgram`),
+  transform/keyframe/fade per frame via `VideoCompositorSettings`, fallback ke
+  frame diam bila player gagal. Thumbnail & waveform di timeline. APK release
+  (R8, ~1,9 MB) ditandatangani dev key yang di-commit. 107 test lulus, lint
+  bersih. **Belum diuji di perangkat fisik** (server tanpa emulator/KVM).
+- Temuan saat port: `CompositionPlayer` wajib `EditedMediaItem.setDurationUs`
+  untuk semua item (bukan hanya gambar), dan gap di awal sequence butuh
+  `trackTypes` dideklarasikan — keduanya tertangkap test Robolectric.
+- ⏭ Berikutnya: Milestone 5 — export MP4 dengan `Transformer` memakai
+  `Composition` yang sama (teks sebagai overlay bitmap).
 - Catatan lingkungan build (lokal, tidak di-commit): Android SDK di
   `/root/android-sdk` (`local.properties`), dan init script
   `~/.gradle/init.d/maven-central-mirror.gradle.kts` yang memakai mirror
