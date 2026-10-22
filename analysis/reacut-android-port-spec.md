@@ -110,8 +110,17 @@ Milestone 3–6 butuh emulator/perangkat.
   `validateProject`, `ProjectJson`) + `:core:edit` (split/trim/speed + semua
   operasi linked/`placeAsset`). 49 test JUnit lulus
   (`./gradlew :core:model:test :core:edit:test`).
-- ⏭ Berikutnya: Milestone 3 — undo/transaksi (port `store.ts`) + timeline
-  Compose. Butuh Android SDK untuk `assembleDebug`; server ini belum punya.
+- ✅ Milestone 3 selesai — `EditorState` (port `store.ts`: undo 150 langkah,
+  transaksi, clipboard, hapus magnetik), `EditorViewModel`, timeline Canvas
+  (scrub+fling, pinch zoom, trim/move dengan snapping), monitor program
+  (frame via `MediaMetadataRetriever`), import media, autosave. APK debug
+  ter-build; 92 test lulus; lint bersih; screenshot via Roborazzi.
+- ⏭ Berikutnya: Milestone 4 — playback real-time ExoPlayer (+ audio), lalu
+  thumbnail/waveform di timeline.
+- Catatan lingkungan build (lokal, tidak di-commit): Android SDK di
+  `/root/android-sdk` (`local.properties`), dan init script
+  `~/.gradle/init.d/maven-central-mirror.gradle.kts` yang memakai mirror
+  Google untuk Maven Central karena `repo.maven.apache.org` membalas 429.
 - `backups/klipa-android.bundle` hanya berisi scaffold awal; sumber utama
   sekarang repo GitHub di atas.
 
