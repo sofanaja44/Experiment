@@ -125,8 +125,19 @@ Milestone 3–6 butuh emulator/perangkat.
 - Temuan saat port: `CompositionPlayer` wajib `EditedMediaItem.setDurationUs`
   untuk semua item (bukan hanya gambar), dan gap di awal sequence butuh
   `trackTypes` dideklarasikan — keduanya tertangkap test Robolectric.
-- ⏭ Berikutnya: Milestone 5 — export MP4 dengan `Transformer` memakai
-  `Composition` yang sama (teks sebagai overlay bitmap).
+- 🐞 0.4.1 — laporan pengguna: "media tidak bergerak saat diputar" setelah
+  upload. Akar masalah (dari dokumentasi resmi + demo Media3 + issue tracker):
+  multi-input video graph dipakai untuk 1 track (jalur belum didukung resmi),
+  player dipakai ulang antar-komposisi, reload player tiap waveform selesai,
+  `setRemoveAudio` (#2854). Perbaikan: single-input untuk 1 track video, player
+  baru tiap komposisi, `setPerStreamMediaProgressionEnabled` (#3453), gain 0
+  untuk mute, reload hanya saat data playback berubah, fallback bertingkat,
+  sheet "Diagnostik pemutaran" (menu ⋮) untuk laporan bug. Plus edit teks &
+  volume, decoder thumbnail/monitor terpisah. 111 test lulus.
+  Catatan: timestamp efek per-item = waktu komposisi (dikonfirmasi di source
+  `PlaybackVideoGraphWrapper`).
+- ⏭ Berikutnya: konfirmasi 0.4.1 di HP pengguna, lalu Milestone 5 — export
+  MP4 dengan `Transformer` memakai `Composition` yang sama.
 - Catatan lingkungan build (lokal, tidak di-commit): Android SDK di
   `/root/android-sdk` (`local.properties`), dan init script
   `~/.gradle/init.d/maven-central-mirror.gradle.kts` yang memakai mirror
