@@ -1,0 +1,117 @@
+# ReaCut → Android (Kotlin/Compose/Media3) — Spesifikasi Port
+
+> Target stack: **Kotlin + Jetpack Compose + Media3 (ExoPlayer preview +
+> Transformer export)**. Sumber: ReaCut (MIT). Dokumen ini merinci seluruh
+> sistem edit ReaCut dan cara mem-port-nya. Pelengkap `reacut-core-engine.md`.
+
+## 0. Lisensi
+
+ReaCut = MIT → port adalah karya turunan. **Wajib** sertakan file `NOTICE`
+dengan copyright ReaCut + teks MIT. Jangan masukkan kode/aset proprietary
+CapCut/Jianying. Aman selama hanya source MIT ReaCut yang diadaptasi.
+
+## 1. Sistem edit ReaCut (detail yang harus di-port akurat)
+
+### 1.1 Model (`src/core/types.ts`)
+`Project{version,id,name,width,height,fps,background,assets[],tracks[],clips[]}`
+→ Kotlin data class immutable. Default proyek: 1920×1080 @30, background
+`#101015`, 3 track awal (text, video, audio). `Clip` = unit atomik (lihat tabel
+field di `reacut-core-engine.md`).
+
+### 1.2 Primitif (`src/core/model.ts`) — port 1:1 sebagai fungsi murni
+- `snapToFrame(t,fps) = round(t*fps)/fps` — **semua** waktu di-snap ke frame.
+- `splitClip(project,clipId,time)`: belah di `at`; klip kanan `sourceIn +=
+  leftDuration*speed`; keyframe & fade di-slice (lihat 1.3/1.4); minimal 1 frame
+  per sisi.
+- `trimClip(project,clipId,edge,time)`: ubah tepi, **clamp** terhadap batas
+  sumber (`start` tak boleh lewat `start - sourceIn/speed`; `end` tak lewat
+  `start + (asset.duration - sourceIn)/speed`). Image = tak terbatas.
+- `changeClipSpeed(project,clipId,speed)`: `ratio = oldSpeed/newSpeed`;
+  `duration *= ratio`; semua `keyframe.time *= ratio`; semua fade `*= ratio`.
+  Rentang 0.1–8.
+- `evaluateKeyframes(clip,time)`: interpolasi linear/easeInOut per properti.
+
+### 1.3 Keyframe + easing (titik paling halus)
+- Properti animatable: `x, y, scale, rotation, opacity, volume`.
+- `easeInOut` memakai polinomial kubik dengan **easing window** `[start,end]`
+  (potongan kurva smoothstep). Koefisien:
+  `a=6·s(1−s)`, `b=3·Δ(1−2s)`, `c=−2Δ²` (Δ=end−start); `ratio' =
+  ratio·(a+b·ratio+c·ratio²)/(a+b+c)`.
+- `sliceKeyframes(clip,from,to)` (dipakai split/trim): **remap** interval kurva
+  tanpa mengubah nilai/bentuk — termasuk menghitung ulang `easingWindow` untuk
+  potongan. Port persis; ini sumber bug halus kalau disederhanakan.
+- Batas: ≤400 keyframe/klip.
+
+### 1.4 Fade (`FadeWindow`)
+Fade disimpan sebagai envelope `{offset,duration,fadeIn,fadeOut}` relatif ke
+timeline lokal klip, dipertahankan saat cut (`preserveFades` menggeser
+`offset`). `evaluateFade = clamp(local/fadeIn) · clamp((dur−local)/fadeOut)`.
+
+### 1.5 Operasi timeline (`src/core/timelineEdits.ts`)
+- **3 mode** `placeAsset`: `insert` (ripple semua klip setelahnya),
+  `overwrite` (potong hanya klip tujuan + pasangan link), `overlay`.
+- **Linked clips** (`linkId`): video+audio yang dipisah tetap trim/split/geser
+  bareng. `trimLinked` meng-clamp delta tepi terhadap handle sumber tiap member;
+  `splitLinked` menghasilkan grup kiri/kanan independen; `detachLinkedAudio`
+  memisah audio ke track audio baru dan menandai video `muted`.
+- Semua menghormati track `locked` dan snap frame.
+
+### 1.6 Validasi (`validateProject`) — jadikan invariant model Kotlin
+fps ∈ {24,25,30,50,60}; dims 16–7680 (integer); speed 0.1–8; volume 0–4;
+scale 1e-6–10; opacity 0–1; brightness −1..1; contrast/saturation 0..3;
+temperature −1..1; blur 0..100; ≤10000 aset/klip, ≤1000 track, ≤400 keyframe;
+durasi total ≤24 jam. Validator menolak data tak tepercaya tanpa coercion —
+pertahankan sikap defensif ini saat load file proyek.
+
+### 1.7 State & undo (`src/editor/store.ts`)
+Zustand store → **ViewModel + StateFlow**. State: `project, path?, selectedIds,
+playhead, playing, zoom, snapping, magnetic, dirty, past[], future[],
+clipboard[]`. `commit(project)` push clone ke `past` (cap **150**), kosongkan
+`future`. **Transaction** (begin/end) supaya satu drag = satu entri undo. Aksi:
+place/split/trim/move/duplicate/copy/paste/addText/addSubtitles/track ops.
+
+### 1.8 Render (ReaCut: FFmpeg) — konsep yang dipetakan ke Media3
+Teks dirender via canvas → PNG overlay (`renderText`: multi-line, stroke,
+background, font CJK fallback). Mask dirender ke PNG alpha (`renderMask`). Speed
+video `setpts`, audio rantai `atempo`. Komposit `overlay ... enable='gte(t,
+start)*lt(t,end)'`. Detail lengkap di `reacut-core-engine.md`.
+
+## 2. Pemetaan ke Media3
+
+Lihat tabel lengkap di skill **`android-video-editor`** (ReaCut concept →
+Media3 target). Ringkas: track → `EditedMediaItemSequence`; overlap/PiP →
+sequence terpisah dalam `Composition` atau `OverlayEffect`; trim →
+`ClippingConfiguration`; transform → `ScaleAndRotateTransformation`+`Presentation`;
+crop → `Crop`; adjustments → `Contrast`/`HslAdjustment`/color-matrix (+blur GL);
+chromaKey & mask & temperature → **custom `GlShaderProgram`**; text → `Bitmap`
++`BitmapOverlay`; export → `Transformer` (H.264, mp4/mov).
+
+**Risiko utama** (jujur): compositing berlapis dengan transform+keyframe per
+klip lebih kaya di FFmpeg daripada Media3 bawaan → siapkan **GL effect custom**
+untuk PiP, chroma-key, mask feather, blur. Kalau mentok, fallback render frame
+via GL lalu umpan ke Transformer.
+
+## 3. Milestone
+
+1. **Core model Kotlin** + port operasi edit (model.ts + timelineEdits.ts) +
+   **unit test JVM** (pakai kasus yang sama dgn ReaCut). Tanpa UI/perangkat.
+2. **Load/save proyek** (JSON, bentuk sama) + `validateProject`.
+3. **Timeline Compose** (track, klip, playhead, zoom, seleksi) + undo + transaksi.
+4. **Preview**: ExoPlayer track dasar → GL compositing lapisan (evaluasi
+   keyframe per frame).
+5. **Export Media3**: 1 track → multi-track → efek → teks.
+6. **Shader custom**: chroma-key, mask, blur, temperature.
+
+Milestone 1–2 bisa dikerjakan & diuji **headless di server ini** (JVM, Gradle).
+Milestone 3–6 butuh emulator/perangkat.
+
+## 4. UI/UX
+
+Ikuti skill **`crafted-ui`**: estetika pro-tool (gelap, padat, presisi),
+timeline di-`Canvas` sendiri (ruler timecode, waveform, thumbnail, handle),
+manipulasi langsung (drag trim/move, pinch zoom), semua state (empty/loading/
+error), edge-to-edge, target sentuh ≥48dp, a11y. Target: tidak terlihat
+template/AI-generated.
+
+---
+*Referensi source: `/home/user/xiangyu-cas/rea-capcut` (read-only, MIT).*
