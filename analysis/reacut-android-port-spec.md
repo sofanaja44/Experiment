@@ -105,6 +105,16 @@ via GL lalu umpan ke Transformer.
 Milestone 1–2 bisa dikerjakan & diuji **headless di server ini** (JVM, Gradle).
 Milestone 3–6 butuh emulator/perangkat.
 
+**Progres** (repo `sofanaja44/klipa-android`, branch `ccr-40d3051a-fe67to`):
+- ✅ Milestone 1–2 selesai — `:core:model` (model, evaluasi keyframe/fade,
+  `validateProject`, `ProjectJson`) + `:core:edit` (split/trim/speed + semua
+  operasi linked/`placeAsset`). 49 test JUnit lulus
+  (`./gradlew :core:model:test :core:edit:test`).
+- ⏭ Berikutnya: Milestone 3 — undo/transaksi (port `store.ts`) + timeline
+  Compose. Butuh Android SDK untuk `assembleDebug`; server ini belum punya.
+- `backups/klipa-android.bundle` hanya berisi scaffold awal; sumber utama
+  sekarang repo GitHub di atas.
+
 ## 4. UI/UX
 
 Ikuti skill **`crafted-ui`**: estetika pro-tool (gelap, padat, presisi),
