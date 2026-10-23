@@ -159,8 +159,32 @@ Milestone 3–6 butuh emulator/perangkat.
     sudah waktu timeline. Bug fade/volume pada klip ber-speed ≠ 1× diperbaiki.
   - Transformer menentukan foto vs video dari MIME `MediaItem`, atau
     `ContentResolver.getType` untuk URI `content://`.
-- ⏭ Berikutnya: konfirmasi export di HP pengguna; lalu foreground service
-  untuk export di latar belakang dan Milestone 6 (shader custom).
+- ✅ Milestone 6 selesai (v0.6.0) — satu shader GLSL ES 1.00 kustom
+  (`core/media/src/main/res/raw/klipa_look_fragment_es2.glsl`) mem-port urutan &
+  rumus 8-bit ReaCut: chroma key → mask → kecerahan/kontras (clamp antar tahap)
+  → saturasi Rec.709 → suhu warna (±35 level R/B). Diuji di WebGL (Chromium
+  headless, SwiftShader) terhadap fungsi asli ReaCut (`applyChromaKey`,
+  `applyShapeMask`, `applyColorAdjustments`): 18 kasus, selisih ≤ 2/255
+  (`tools/shader-check`). Blur = `SeparableConvolution` Media3 dengan sigma
+  dibaca per frame dan resolusi diperkecil untuk radius besar. Alpha: lurus
+  untuk compositor, premultiplied sebelum blur (+ shader unpremultiply), atau
+  "di atas hitam" untuk 1 layer. UI: tool Atur (8 preset filter ReaCut +
+  slider), Chroma key, Masker; slider look & volume tampil live tanpa reload
+  player (`LiveProject` dibaca di thread GL/audio; signature playback hanya
+  memuat ada/tidak look, potong alpha, bucket blur, volume ≠ 1). Frame diam
+  memakai color matrix. 158 test lulus, lint bersih.
+- Temuan saat port:
+  - Pemetaan lama Klipa ke `Contrast`/`HslAdjustment` Media3 salah: Media3
+    `Contrast(c)` memakai faktor (1+c)/(1−c), jadi kontras 2× ReaCut menjadi
+    ekstrem; HSL saturation ≠ matriks Rec.709 ReaCut. Kini diganti shader.
+  - `HslShaderProgram` Media3 menolak input HDR; shader Klipa tidak.
+  - `SeparableConvolutionShaderProgram` membuat ulang tekstur kernel bila
+    `getConvolution(t)` berubah (`equals`), dan sigma dihitung dalam piksel
+    input walau output diperkecil.
+  - `GlProgram` mendukung uniform int/float/vec/mat (bukan bool).
+- ⏭ Berikutnya: konfirmasi export & efek di HP pengguna; lalu export di latar
+  belakang (foreground service), tool crop, geser/skala klip di monitor,
+  daftar proyek.
 - Catatan lingkungan build (lokal, tidak di-commit): Android SDK di
   `/root/android-sdk` (`local.properties`), dan init script
   `~/.gradle/init.d/maven-central-mirror.gradle.kts` yang memakai mirror
