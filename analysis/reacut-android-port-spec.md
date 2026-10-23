@@ -136,8 +136,31 @@ Milestone 3–6 butuh emulator/perangkat.
   volume, decoder thumbnail/monitor terpisah. 111 test lulus.
   Catatan: timestamp efek per-item = waktu komposisi (dikonfirmasi di source
   `PlaybackVideoGraphWrapper`).
-- ⏭ Berikutnya: konfirmasi 0.4.1 di HP pengguna, lalu Milestone 5 — export
-  MP4 dengan `Transformer` memakai `Composition` yang sama.
+- ✅ 0.4.1 dikonfirmasi pengguna: media sudah bisa diputar.
+- ✅ Milestone 5 selesai (v0.5.0) — export MP4 (H.264/AAC) lewat `Transformer`
+  dari `Composition` yang sama dengan preview; semua lapisan video dikomposit.
+  Teks = `OverlayEffect` di level komposisi (setelah compositing), satu
+  `BitmapOverlay` per *lane* teks yang tidak tumpang-tindih, bitmap dirender
+  saat klip muncul (port `renderText` ReaCut, dipakai juga oleh monitor
+  preview → teks identik di preview & export). Resolusi 480p/720p/1080p
+  (`Presentation` di akhir), estimasi ukuran dari rumus bitrate default Media3
+  (0,14 bit/piksel/frame, kini diset eksplisit), `FrameDropEffect` bila media
+  lebih cepat dari fps proyek, HDR → SDR (OpenGL, API 29+). Hasil disalin ke
+  `Movies/Klipa` via MediaStore (Android 8–9: izin storage; tanpa izin tetap
+  bisa dibagikan via FileProvider). Progres + batal; preview melepas decoder
+  selama export. 138 test lulus, lint bersih.
+- Temuan saat port (dicek di bytecode Media3 1.11.1):
+  - Efek komposisi (`Composition.effects`) diteruskan ke video graph tunggal
+    maupun multi-input, jadi overlay teks berlaku di kedua jalur.
+  - `BitmapOverlay` meng-upload tekstur hanya bila objek bitmap atau
+    `generationId` berubah → bitmap per klip di-cache selama klip tampil.
+  - Perubahan speed dipasang sebagai *pre-processing* sebelum audio processor
+    item (CompositionPlayer & Transformer) → posisi di `GainAudioProcessor`
+    sudah waktu timeline. Bug fade/volume pada klip ber-speed ≠ 1× diperbaiki.
+  - Transformer menentukan foto vs video dari MIME `MediaItem`, atau
+    `ContentResolver.getType` untuk URI `content://`.
+- ⏭ Berikutnya: konfirmasi export di HP pengguna; lalu foreground service
+  untuk export di latar belakang dan Milestone 6 (shader custom).
 - Catatan lingkungan build (lokal, tidak di-commit): Android SDK di
   `/root/android-sdk` (`local.properties`), dan init script
   `~/.gradle/init.d/maven-central-mirror.gradle.kts` yang memakai mirror
