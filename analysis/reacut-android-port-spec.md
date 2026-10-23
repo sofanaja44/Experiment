@@ -182,9 +182,19 @@ Milestone 3–6 butuh emulator/perangkat.
     `getConvolution(t)` berubah (`equals`), dan sigma dihitung dalam piksel
     input walau output diperkecil.
   - `GlProgram` mendukung uniform int/float/vec/mat (bukan bool).
-- ⏭ Berikutnya: konfirmasi export & efek di HP pengguna; lalu export di latar
-  belakang (foreground service), tool crop, geser/skala klip di monitor,
-  daftar proyek.
+- ✅ v0.7.0 — edit langsung di monitor: ketuk untuk memilih (ketuk judul
+  terpilih untuk edit teks), geser klip terpilih, cubit 2 jari untuk skala &
+  rotasi; snap ke garis tengah, 100% dan sudut siku; keyframe properti yang
+  sama ikut bergeser (`transformClip`). Hit-test & outline memakai `LayerBox`
+  (ukuran media = fit ke frame proyek, teks = `textLayerSize` yang sama dengan
+  render). Placement dibaca live oleh komposisi preview (matriks gerak selalu
+  ada di mode 1 layer saat live; compositor membaca `LiveProject`), jadi
+  menggeser klip tidak me-reload player. Tool **Overlay**: media jadi PiP di
+  track video di atas track utama (`placeOverlays`, mode Overlay ReaCut), 50%.
+  175 test lulus (termasuk smoke test gesture di aplikasi asli), lint bersih.
+- ⏭ Berikutnya: konfirmasi export, efek & gesture di HP pengguna; lalu export
+  di latar belakang (foreground service), tool crop, editor keyframe, daftar
+  proyek.
 - Catatan lingkungan build (lokal, tidak di-commit): Android SDK di
   `/root/android-sdk` (`local.properties`), dan init script
   `~/.gradle/init.d/maven-central-mirror.gradle.kts` yang memakai mirror
