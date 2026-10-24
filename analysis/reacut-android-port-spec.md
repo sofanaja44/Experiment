@@ -192,9 +192,20 @@ Milestone 3–6 butuh emulator/perangkat.
   menggeser klip tidak me-reload player. Tool **Overlay**: media jadi PiP di
   track video di atas track utama (`placeOverlays`, mode Overlay ReaCut), 50%.
   175 test lulus (termasuk smoke test gesture di aplikasi asli), lint bersih.
-- ⏭ Berikutnya: konfirmasi export, efek & gesture di HP pengguna; lalu export
-  di latar belakang (foreground service), tool crop, editor keyframe, daftar
-  proyek.
+- ✅ v0.8.0 — banyak proyek: modul JVM `:core:projects` (`ProjectLibrary`:
+  satu file `<id>.klipa.json` per proyek, indeks ringkasan berbasis waktu
+  modifikasi file, tulis atomik, file rusak disisihkan, migrasi
+  `autosave.klipa.json` lama). Beranda: tombol proyek baru → pilih format
+  9:16 / 16:9 / 1:1 / 4:5 (1080p), grid proyek dengan cover frame pertama,
+  badge format & durasi, waktu relatif; ganti nama (sheet), duplikat, hapus
+  (konfirmasi). `EditorViewModel.open/close`: simpan proyek lama, riwayat
+  undo baru, autosave hanya untuk proyek yang terbuka. Editor: tombol &
+  gesture kembali, ⋮ → Format. 188 test lulus.
+  Catatan: `AlertDialog` berisi `TextField` tidak pernah idle di Robolectric
+  dalam `MainActivity` (dialog biasa & sheet berisi teks normal) → ganti
+  nama memakai bottom sheet.
+- ⏭ Berikutnya: konfirmasi di HP pengguna; lalu export di latar belakang
+  (foreground service), tool crop, editor keyframe.
 - Catatan lingkungan build (lokal, tidak di-commit): Android SDK di
   `/root/android-sdk` (`local.properties`), dan init script
   `~/.gradle/init.d/maven-central-mirror.gradle.kts` yang memakai mirror
