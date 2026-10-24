@@ -204,8 +204,12 @@ Milestone 3–6 butuh emulator/perangkat.
   Catatan: `AlertDialog` berisi `TextField` tidak pernah idle di Robolectric
   dalam `MainActivity` (dialog biasa & sheet berisi teks normal) → ganti
   nama memakai bottom sheet.
-- ⏭ Berikutnya: konfirmasi di HP pengguna; lalu export di latar belakang
-  (foreground service), tool crop, editor keyframe.
+- ✅ v0.9.0 — export di latar belakang: `ExportController` milik
+  `Application` (bukan ViewModel), `ExportService` foreground (tipe
+  `mediaProcessing` di API 35+, `dataSync` di 29–34) dengan notifikasi
+  progres; notifikasi hasil: "Video tersimpan" (ketuk → putar) atau gagal.
+  Izin notifikasi diminta saat Export (API 33+). 190 test lulus.
+- ⏭ Berikutnya: konfirmasi di HP pengguna; lalu tool crop, editor keyframe.
 - Catatan lingkungan build (lokal, tidak di-commit): Android SDK di
   `/root/android-sdk` (`local.properties`), dan init script
   `~/.gradle/init.d/maven-central-mirror.gradle.kts` yang memakai mirror
