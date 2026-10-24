@@ -215,8 +215,16 @@ Milestone 3–6 butuh emulator/perangkat.
   (`AnnexBUtils`); encoder HP pengguna tidak cocok. Kini `FrameworkMuxer`
   (MediaMuxer Android) dipakai dulu; bila muxer gagal (runtime check /
   muxing), export diulang sekali dengan muxer Media3.
-- ⏭ Berikutnya: konfirmasi export di HP pengguna; lalu tool crop, editor
-  keyframe.
+- ✅ v0.10.0 — tool crop (video & foto): sheet dengan frame klip di bawah
+  playhead, geser kotak / tarik sudut (mengikuti jari dari titik sentuh,
+  termasuk touch slop), preset rasio 9:16 / 16:9 / 1:1 / 4:5 yang terkunci
+  saat sudut ditarik, Reset. `CropEdits.kt` di `:core:edit`: `centeredCrop` &
+  `updateCropField` port dari ReaCut `VisualTools.tsx` (5 test ReaCut),
+  `moveCrop` / `resizeCrop` / `storedCrop` milik Klipa; crop seluruh sumber
+  disimpan sebagai `null` agar tidak ada pass Crop. Frame diam di monitor kini
+  ikut di-crop (fit sama dengan export via `fitSize`). Label Indonesia
+  "Pangkas" ("Potong" sudah dipakai Split). 203 test lulus.
+- ⏭ Berikutnya: konfirmasi export di HP pengguna (0.9.1+); editor keyframe.
 - Catatan lingkungan build (lokal, tidak di-commit): Android SDK di
   `/root/android-sdk` (`local.properties`), dan init script
   `~/.gradle/init.d/maven-central-mirror.gradle.kts` yang memakai mirror
