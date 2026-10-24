@@ -209,7 +209,14 @@ Milestone 3–6 butuh emulator/perangkat.
   `mediaProcessing` di API 35+, `dataSync` di 29–34) dengan notifikasi
   progres; notifikasi hasil: "Video tersimpan" (ketuk → putar) atau gagal.
   Izin notifikasi diminta saat Export (API 33+). 190 test lulus.
-- ⏭ Berikutnya: konfirmasi di HP pengguna; lalu tool crop, editor keyframe.
+- 🐞 v0.9.1 — laporan pengguna: export gagal `ERROR_CODE_FAILED_RUNTIME_CHECK:
+  Invalid Nal units`. Transformer 1.11 default memakai `DefaultMuxer` →
+  `InAppMp4Muxer` (muxer Media3) yang mengharuskan sampel H.264 Annex-B
+  (`AnnexBUtils`); encoder HP pengguna tidak cocok. Kini `FrameworkMuxer`
+  (MediaMuxer Android) dipakai dulu; bila muxer gagal (runtime check /
+  muxing), export diulang sekali dengan muxer Media3.
+- ⏭ Berikutnya: konfirmasi export di HP pengguna; lalu tool crop, editor
+  keyframe.
 - Catatan lingkungan build (lokal, tidak di-commit): Android SDK di
   `/root/android-sdk` (`local.properties`), dan init script
   `~/.gradle/init.d/maven-central-mirror.gradle.kts` yang memakai mirror
